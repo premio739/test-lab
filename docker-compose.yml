@@ -1,0 +1,15 @@
+version: '2'
+services:
+        nginx:
+                build: .
+                ports:
+                        - 80:80
+                        - 443:443
+                restart: always
+                volumes:
+                        - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+                        - ./config/nginx/sites-available:/etc/nginx/sites-available
+                        - ./sslcerts:/etc/nginx/sslcerts  
+                        - ./www/logs/nginx:/var/log/nginx
+                        - ./www:/var/www  
+

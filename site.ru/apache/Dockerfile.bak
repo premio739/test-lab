@@ -1,0 +1,32 @@
+FROM debian:9.13
+
+RUN apt-get update && apt -y install lsb-release \
+apt-transport-https \
+ca-certificates \
+wget \
+&& wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+
+RUN echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/php.list && apt update \
+&& apt -y install apache2 \
+	          php7.4 \
+	          libapache2-mod-php7.4 \
+		  libapache2-mpm-itk \
+		  php7.4-common \
+		  php7.4-gd \
+		  php7.4-mysql \
+		  php7.4-mbstring \
+		  php7.4-curl \
+		  php7.4-dom \
+		  php7.4-imagick \
+		  php7.4-zip
+
+COPY config/apache2.conf /etc/apache2/
+COPY config/ports.conf /etc/apache2/
+COPY config/sites-available/site.ru.conf /etc/apache2/sites-available/
+COPY php-config/php.ini /etc/php/7.4/apache2/
+
+RUN a2dissite 000-default && a2ensite site.ru
+
+RUN useradd -d /var/www/site.ru -m -G www-data -s /bin/false -u 1010 -g 1010 site.ru && mkdir -p /var/www/sessions && mkdir -p /var/www/temp
+
+CMD ["apachectl","-D","FOREGROUND"]		 

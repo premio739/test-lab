@@ -1,0 +1,33 @@
+version: '2'
+services:
+        nginx_site_ru:
+                build: ./site.ru/nginx
+                volumes:
+                        - ./sslcerts:/etc/nginx/sslcerts
+                        - ./site.ru/nginx/config/nginx.conf:/etc/nginx/nginx.conf
+                        - ./site.ru/nginx/config/sites-available:/etc/nginx/sites-available  
+                        - ./www:/var/www
+                restart: always
+        apache2_site_ru:
+                build: ./site.ru/apache
+                cap_add:
+                        - SYS_NICE
+                        - DAC_READ_SEARCH
+                environment:
+                        - MYSQL_SERVER=mariadb_site_ru
+                volumes:
+                        - ./site.ru/apache/config/apache2.conf:/etc/apache2/apache2.conf
+                        - ./site.ru/apache/config/ports.conf:/etc/apache2/ports.conf
+                        - ./site.ru/apache/config/sites-available/site.ru.conf:/etc/apache2/sites-enabled/site.ru.conf
+                        - ./site.ru/apache/php-config/php.ini:/etc/php/7.4/apache2/php.ini
+                        - ./www:/var/www
+                restart: always
+        mariadb_site_ru:
+                image: mariadb:latest
+                environment:
+                        MYSQL_ROOT_PASSWORD: vecrkgfccdjhl
+                volumes:
+                        - ./db/site.ru:/var/lib/mysql
+                        - ./site.ru/mysql/config/50-server.cnf:/etc/mysql/mariadb.conf.d/50-server.cnf
+                        - ./site.ru/mysql/initdb:/docker-entrypoint-initdb.d
+                restart: always
